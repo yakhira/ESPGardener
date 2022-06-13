@@ -1,0 +1,120 @@
+<!-- HEADER -->
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP Configuration Interface</title>
+    <!-- SCRIPT -->
+    <script>
+        function showPassword(field, button) {
+            var field = document.getElementById(field);
+            if (field.type == "password") {
+                field.type = "text";
+                button.value = "***";
+            }
+            else {
+                field.type = "password";
+                button.value = "abc";
+            }
+            ;
+        }
+    </script>
+    <!-- STYLE -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #wrapper {
+            margin: 0 auto;
+            width: 420px;
+        }
+
+        #form-div {
+            background-color: rgba(72, 72, 72, 0.4);
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-bottom: 60px;
+            padding-top: 1px;
+            -moz-border-radius: 7px;
+            -webkit-border-radius: 7px;
+        }
+
+        .data-input {
+            color: #3c3c3c;
+            background-color: #fbfbfb;
+            padding: 5px 5px 5px 24px;
+            font-size: 20px;
+            width: 100%;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            -ms-box-sizing: border-box;
+            box-sizing: border-box;
+            border: 3px solid rgba(0, 0, 0, 0);
+            -moz-border-radius: 7px;
+            -webkit-border-radius: 7px;
+        }
+
+        .button-blue,
+        .pwd-button {
+            float: left;
+            width: 100%;
+            border: #fbfbfb solid 3px;
+            cursor: pointer;
+            background-color: #3498db;
+            color: white;
+            font-size: 20px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            font-weight: 700;
+            -moz-border-radius: 7px;
+            -webkit-border-radius: 7px;
+        }
+
+        .button-blue:hover,
+        .pwd-button:hover {
+            background-color: #99ddff;
+            color: #0493bd;
+        }
+
+        .text {
+            padding: 5px 5px 5px 5px;
+            font-size: 16px;
+            color: grey;
+            float: left;
+            clear: both;
+        }
+    </style>
+</head>
+<body>
+    <iframe name="hidden_frame" style="display:none"></iframe>
+    <div id="wrapper">
+        <div id="form-div">
+            <form name="form" action="/wifi/save" method="POST">
+                <p><input type="text" name="wifi_ssid" class="data-input" placeHolder="Wifi SSID"
+                        required value="" /></p>
+                <div class="submit">
+                    <input type="password" id="password" name="wifi_password" class="data-input"
+                        placeHolder="Wifi Password" value="" style="width:75%" />
+                    <input type="button" class="pwd-button" id="pwd"
+                        onClick="showPassword(&quot;password&quot;, &quot;pwd&quot;);" title="Show/hide password"
+                        value="show" style="width:20%;float:right" />
+                </div>
+                <p><input type="text" name="hostname" class="data-input" placeHolder="HOSTNAME"
+                        value="" /></p>
+                <p><input type="text" name="ota_update_url" class="data-input"
+                        placeHolder="OTA UPDATE URL (optional)" value="" /></p>
+                <p><input type="text" name="data_url" class="data-input"
+                        placeHolder="DATA URL (optional):" value="" /></p>
+                <p><input type="checkbox" name="restart_device" placeHolder="Restart device"/>Restart device</p>
+                <div class="submit">
+                    <input type="submit" value="Save" class="button-blue">
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>
+<!-- END -->

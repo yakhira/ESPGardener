@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ESPGardener control </title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/w3.css">
+</head>
+<body>
+  <div id="main">
+
+    <div class="w3-teal">
+      <div class="w3-container">
+        <h1>API endpoints</h1>
+      </div>
+    </div>
+
+    <div class="w3-bar w3-black">
+      <a class="w3-bar-item w3-button"
+         href="index.html">Home</a>
+      <a class="w3-bar-item w3-button"
+         href="system.html">System</a>
+      <a class="w3-bar-item w3-button"
+         href="api.html">API</a>
+    </div>
+
+    <div class="w3-container">
+      <p>Url: /api/water?pump=[pump number]&duration=[max interval for pump work]</p>
+      <p>Method: POST</p>
+      <p>Json body: 
+         <div class="w3-code">{"active": "false"} </div>
+         or 
+         <div class="w3-code">{"active": "true"}</div>
+      </p>
+      <p>Response body: 
+         <div class="w3-code">{"is_active": "false"} </div>
+         or 
+         <div class="w3-code">{"is_active": "true"}</div>
+      </p>
+      </br>
+      <p>Url: /api/water?pump=[pump number]</p>
+      <p>Method: GET</p>
+      <p>Response body: 
+         <div class="w3-code">{"is_active": "false"} </div>
+         or 
+         <div class="w3-code">{"is_active": "true"}</div>
+      </p>
+    </div>
+
+  </div>
+
+</body>
+</html>

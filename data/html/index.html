@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>ESPGardener control </title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/w3.css">
+    <script>
+        function managePump(pump) {
+            var request = new XMLHttpRequest();
+            var duration = document.getElementById("pump" + pump + "-duration").value;
+
+            if (document.getElementById("pump" + pump).textContent === "Start") {
+                request.open("POST", "/api/water?pump=" + pump + "&active=true&duration=" + duration);
+            } else {
+                request.open("POST", "/api/water?pump=" + pump + "&active=false");
+            }
+            request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+            request.onerror = function () {
+                document.getElementById("pump" + pump).textContent = "Start";
+                document.getElementById("pump" + pump + "-state").textContent = "not active";
+                document.getElementById("pump" + pump + "-state").className = "w3-text-gray";
+            }
+
+            request.ontimeout = function () {
+                document.getElementById("pump" + pump).textContent = "Start";
+                document.getElementById("pump" + pump + "-state").textContent = "not active";
+                document.getElementById("pump" + pump + "-state").className = "w3-text-gray";
+            }
+
+            request.onreadystatechange = function () {
+                if (request.readyState == XMLHttpRequest.DONE) {
+                    if (request.responseText) {
+                        data = JSON.parse(request.responseText);
+
+                        if (data["is_active"] === "true") {
+                            document.getElementById("pump" + pump).textContent = "Stop";
+                            document.getElementById("pump" + pump + "-state").textContent = "active";
+                            document.getElementById("pump" + pump + "-state").className = "w3-text-green";
+                        }
+                        else {
+                            document.getElementById("pump" + pump).textContent = "Start";
+                            document.getElementById("pump" + pump).textContent = "Start";
+                            document.getElementById("pump" + pump + "-state").textContent = "not active";
+                            document.getElementById("pump" + pump + "-state").className = "w3-text-gray";
+                        }
+                        document.getElementById("pump" + pump).removeAttribute("disabled");
+                    }
+                }
+            }
+
+            request.send("");
+            document.getElementById("pump" + pump).setAttribute("disabled", "true");
+        }
+
+        function getPumpStatus(pump) {
+            var request = new XMLHttpRequest();
+
+            request.open("GET", "/api/water?pump=" + pump);
+            request.onreadystatechange = function () {
+                if (request.readyState == XMLHttpRequest.DONE) {
+                    if (request.responseText) {
+                        var data = JSON.parse(request.responseText);
+
+                        if (data["is_active"] === "true") {
+                            document.getElementById("pump" + pump).textContent = "Stop";
+                            document.getElementById("pump" + pump + "-state").textContent = "active";
+                            document.getElementById("pump" + pump + "-state").className = "w3-text-green";
+                        }
+                        else {
+                            document.getElementById("pump" + pump).textContent = "Start";
+                            document.getElementById("pump" + pump + "-state").textContent = "not active";
+                            document.getElementById("pump" + pump + "-state").className = "w3-text-gray";
+                        }
+                    }
+                }
+            }
+            request.send("");
+
+            setTimeout(getPumpStatus, 5000, pump);
+        }
+        getPumpStatus(1);
+        getPumpStatus(2);
+    </script>
+</head>
+
+<body>
+    <div id="main">
+
+        <div class="w3-teal">
+            <div class="w3-container">
+                <h1>Pump controler</h1>
+            </div>
+        </div>
+
+        <div class="w3-bar w3-black">
+            <a class="w3-bar-item w3-button" href="index.html">Home</a>
+            <a class="w3-bar-item w3-button" href="system.html">System</a>
+            <a class="w3-bar-item w3-button" href="api.html">API</a>
+        </div>
+
+        <div class="w3-container">
+            <p>
+                <iframe name="hidden_frame" style="display:none"></iframe>
+            <div id="wrapper">
+                <div id="form-div">
+                    <table class="w3-table">
+                        <tr>
+                            <th>
+                                Water pump number
+                            </th>
+                            <th>
+                                State
+                            </th>
+                            <th>
+                                Duration (seconds)
+                            </th>
+                            <th>
+                                Action
+                            </th>
+                        </tr>
+                        <tr>
+                            <td>1</td>
+                            <td id="pump1-state" class="w3-text-gray"> not active </td>
+                            <td><input id="pump1-duration" type="text" value="300"></td>
+                            <td>
+                                <div class="submit">
+                                    <button id="pump1" onClick="managePump(1);">Start</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td id="pump2-state" class="w3-text-gray"> not active </td>
+                            <td><input id="pump2-duration" type="text" value="300"></td>
+                            <td>
+                                <div class="submit">
+                                    <button id="pump2" onClick="managePump(2);">Start</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            </p>
+        </div>
+
+    </div>
+
+</body>
+
+</html>
