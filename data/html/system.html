@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <title>ESPGardener control </title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="css/w3.css">
-  <script>
-      function getVersion() {
+   <title>ESPGardener control </title>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <link rel="stylesheet" href="css/w3.css">
+   <script>
+      function getInfo() {
          var request = new XMLHttpRequest();
-         request.open("GET", "/api/version");
+         request.open("GET", "/api/info");
          request.onreadystatechange = function () {
             if (request.readyState == XMLHttpRequest.DONE) {
                if (request.responseText) {
-                  document.getElementById("version").textContent = request.responseText;
+                  var data = JSON.parse(request.responseText);
+                  document.getElementById("version").textContent = data["version"];
+                  document.getElementById("data_url").textContent = data["data_url"];
+                  document.getElementById("update_url").textContent = data["update_url"];
+                  document.getElementById("last_status").textContent = data["last_status"];
                }
             }
          }
@@ -28,11 +33,11 @@
                   var logs = request.responseText.split(/\r?\n/);
                   var table = document.getElementById("logs");
 
-                  logs.forEach( line => {
+                  logs.forEach(line => {
                      let row = table.insertRow();
                      let log = line.split(";");
 
-                     for (var i = 0; i < log.length; i ++) { 
+                     for (var i = 0; i < log.length; i++) {
                         let cell = row.insertCell(i);
                         cell.innerHTML = log[i];
                      }
@@ -43,61 +48,99 @@
          request.send("");
       }
 
+      function doAction(action) {
+         var request = new XMLHttpRequest();
+         request.open("GET", action);
+         request.onreadystatechange = function () {
+            if (request.readyState == XMLHttpRequest.DONE) {
+               if (request.responseText) {
+                  var data = JSON.parse(request.responseText);
+                  document.getElementById("last_status").textContent = data["status"];
+               }
+            }
+         }
+         request.send("");
+      }
+
       function loadData() {
          getLogs();
-         getVersion();
+         getInfo();
+         setTimeout(loadData, 5000);
       }
    </script>
 </head>
+
 <body onload="loadData();">
-  <div id="main">
+   <div id="main">
 
-    <div class="w3-teal">
-      <div class="w3-container">
-        <h1>API endpoints</h1>
+      <div class="w3-teal">
+         <div class="w3-container">
+            <h1>API endpoints</h1>
+         </div>
       </div>
-    </div>
 
-    <div class="w3-bar w3-black">
-      <a class="w3-bar-item w3-button"
-         href="index.html">Home</a>
-      <a class="w3-bar-item w3-button"
-         href="system.html">System</a>
-       <a class="w3-bar-item w3-button"
-         href="api.html">API</a>
-    </div>
+      <div class="w3-bar w3-black">
+         <a class="w3-bar-item w3-button" href="index.html">Home</a>
+         <a class="w3-bar-item w3-button" href="system.html">System</a>
+         <a class="w3-bar-item w3-button" href="api.html">API</a>
+      </div>
 
-    <div class="w3-container">
-      <p>
-         <span>Sketch version: </span>
-         <span id="version">0</span>
-      </p>
-      <p><a href="/api/restart">Restart gardener</a></p>
-      <table class="w3-table" id="logs">
-         <tr>
-             <th>
-                 Date
-             </th>
-             <th>
-                 Pump number
-             </th>
-             <th>
-                 Duration (seconds)
-             </th>
-             <th>
-                 Action
-             </th>
-         </tr>
-         <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-         </tr>
-     </table>
-    </div>
-
-  </div>
-
+      <div class="w3-container">
+         <p>
+            <span>Sketch version: </span>
+            <span id="version">0</span>
+         </p>
+         <p>
+            <span>UI version: </span>
+            <span>2</span>
+         </p>
+         <p>
+            <span>Data url: </span>
+            <span id="data_url">0</span>
+         </p>
+         <p>
+            <span>Firmware url: </span>
+            <span id="update_url">0</span>
+         </p>
+         <p>
+            <span>Last status: </span>
+            <span id="last_status">Boot</span>
+         </p>
+         <div class="w3-container">
+            <p>
+               <a href="#" onclick="doAction('/api/restart')">Restart gardener</a>
+            </p>
+            <p>
+               <a href="#" onclick="doAction('/api/update/content')">Update UI files</a>
+            </p>
+            <p>
+               <a href="#" onclick="doAction('/api/update/firmware')">Update firmware</a>
+            </p>
+         </div>
+         <table class="w3-table" id="logs">
+            <tr>
+               <th>
+                  Date
+               </th>
+               <th>
+                  Pump number
+               </th>
+               <th>
+                  Duration (seconds)
+               </th>
+               <th>
+                  Action
+               </th>
+            </tr>
+            <tr>
+               <td></td>
+               <td></td>
+               <td></td>
+               <td></td>
+            </tr>
+         </table>
+      </div>
+   </div>
 </body>
+
 </html>

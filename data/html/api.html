@@ -25,19 +25,18 @@
     </div>
 
     <div class="w3-container">
-      <p>Url: /api/water?pump=[pump number]&duration=[max interval for pump work]</p>
+      <p><b>Start pump</b></p>
+      <p>Url: /api/water?pump=[pump number]&duration=[max interval for pump work]&active=true</p>
       <p>Method: POST</p>
-      <p>Json body: 
-         <div class="w3-code">{"active": "false"} </div>
-         or 
-         <div class="w3-code">{"active": "true"}</div>
-      </p>
-      <p>Response body: 
-         <div class="w3-code">{"is_active": "false"} </div>
-         or 
-         <div class="w3-code">{"is_active": "true"}</div>
+      <p>Response body: <div class="w3-code">{"is_active": "true"}</div>
       </p>
       </br>
+      <p><b>Stop pump</b></p>
+      <p>Url: /api/water?pump=[pump number]&active=false</p>
+      <p>Method: POST</p>
+      <p>Response body:  <div class="w3-code">{"is_active": "false"} </div></p>
+      </br>
+      <p><b>Get state of pump</b></p>
       <p>Url: /api/water?pump=[pump number]</p>
       <p>Method: GET</p>
       <p>Response body: 

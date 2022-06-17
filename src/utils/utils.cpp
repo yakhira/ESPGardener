@@ -2,7 +2,7 @@
 
 
 ESPUtils::ESPUtils(){
-	
+	clientSecure.setInsecure();
 }
 
 ESPUtils::~ESPUtils(){
@@ -125,10 +125,33 @@ void ESPUtils::listDir(const char * dirname, uint8_t levels){
     }
 }
 
+bool ESPUtils::getHTTPData(String url, String &result) {
+	HTTPClient http;
+
+	if (url.indexOf("https") >= 0) {
+		http.begin(clientSecure, url);
+	} else {
+		http.begin(client, url);
+	}
+
+	int httpCode = http.GET();
+
+	if (httpCode == HTTP_CODE_OK) {
+		result = http.getString();
+	}
+	http.end();
+	return (httpCode == HTTP_CODE_OK);
+}
+
 bool ESPUtils::getHTTPJsonData(String url, JSONVar &result) {
 	HTTPClient http;
 
-	http.begin(client, url);
+	if (url.indexOf("https") >= 0) {
+		http.begin(clientSecure, url);
+	} else {
+		http.begin(client, url);
+	}
+
 	int httpCode = http.GET();
 
 	if (httpCode == HTTP_CODE_OK) {
@@ -145,13 +168,32 @@ bool ESPUtils::getHTTPJsonData(String url, JSONVar &result) {
 bool ESPUtils::sendHTTPJsonData(String url, JSONVar data) {
 	HTTPClient http;
 
-	http.begin(client, url);
+	if (url.indexOf("https") >= 0) {
+		http.begin(clientSecure, url);
+	} else {
+		http.begin(client, url);
+	}
+
 	http.addHeader("Content-Type", "application/json");
 
 	int httpCode = http.POST(JSON.stringify(data));
 	http.end();
 
 	return (httpCode == HTTP_CODE_OK);
+}
+
+void ESPUtils::removeString(String string, String from, String to, String &result) {
+	int patternFrom = string.indexOf(from);
+	int patternTo = string.indexOf(to);
+
+	if (patternTo >= 0 && patternFrom >= 0) {
+		string.remove(
+		patternFrom + from.length(),
+		patternTo - patternFrom - to.length()
+		);
+	}
+
+	result = string;
 }
 
 t_httpUpdate_return ESPUtils::updateSketch(String url){
