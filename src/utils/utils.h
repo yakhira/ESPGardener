@@ -18,6 +18,7 @@ class ESPUtils {
         void removeFile(String filename);
 
         bool getHTTPData(String url, String &result);
+        bool downloadFile(String url, String filename);
         bool getHTTPJsonData(String url, JSONVar &result);
         bool sendHTTPJsonData(String url, JSONVar data);
 

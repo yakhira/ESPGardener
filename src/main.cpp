@@ -2,7 +2,7 @@
 #include <ESPAsyncWebServer.h>
 
 // -------- DEFAULT SKETCH PARAMETERS --------
-const int SKETCH_VERSION = 50;
+const int SKETCH_VERSION = 58;
 const int WATER_PUMPS[] = {12, 4};
 const long unsigned int DEFAULT_DURATION = 300;
 
@@ -24,11 +24,8 @@ void update_static_content() {
 	};
 
 	for (unsigned int i = 0; i < sizeof(htmlFiles)/sizeof(String); i++){
-		if(espwifi.getHTTPData(espwifi.dataUrl + htmlFiles[i], data)) {
-			if (!data.isEmpty()) {
-				espwifi.saveFile(htmlFiles[i], data);
-				lastStatus += " " + htmlFiles[i];
-			}
+		if(espwifi.downloadFile(espwifi.dataUrl + htmlFiles[i], htmlFiles[i])) {
+			lastStatus += " " + htmlFiles[i];
 		}
 	}
 }
