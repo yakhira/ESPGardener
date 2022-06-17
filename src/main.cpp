@@ -1,20 +1,50 @@
 #include "setup/wifi.h"
+#include <NTPClient.h>
 #include <ESPAsyncWebServer.h>
 
 // -------- DEFAULT SKETCH PARAMETERS --------
-const int SKETCH_VERSION = 59;
+const int SKETCH_VERSION = 62;
 //--------------------------------------------
 
 const int WATER_PUMPS[] = {12, 4};
 const long unsigned int DEFAULT_DURATION = 300;
+const unsigned int TIME_OFFSET = 7200;
 unsigned long WATER_PUMPS_DURATION[] = {0, 0};
-const String timeAPI = "http://worldclockapi.com/api/json/cet/now";
 
 int systemAction = 0;
 String lastStatus;
 
 ESPWiFi espwifi("ESP12-F");
+WiFiUDP ntpUDP;
 AsyncWebServer gardener(80);
+NTPClient timeClient(ntpUDP);
+
+String getFullFormattedTime() {
+   time_t rawtime = timeClient.getEpochTime();
+   struct tm * ti;
+   ti = localtime (&rawtime);
+
+   uint16_t year = ti->tm_year + 1900;
+   String yearStr = String(year);
+
+   uint8_t month = ti->tm_mon + 1;
+   String monthStr = month < 10 ? "0" + String(month) : String(month);
+
+   uint8_t day = ti->tm_mday;
+   String dayStr = day < 10 ? "0" + String(day) : String(day);
+
+   uint8_t hours = ti->tm_hour;
+   String hoursStr = hours < 10 ? "0" + String(hours) : String(hours);
+
+   uint8_t minutes = ti->tm_min;
+   String minuteStr = minutes < 10 ? "0" + String(minutes) : String(minutes);
+
+   uint8_t seconds = ti->tm_sec;
+   String secondStr = seconds < 10 ? "0" + String(seconds) : String(seconds);
+
+   return yearStr + "-" + monthStr + "-" + dayStr + " " +
+          hoursStr + ":" + minuteStr + ":" + secondStr;
+}
 
 void update_static_content() {
 	String data;
@@ -42,15 +72,11 @@ void saveLogs(String pump, String duration, String action) {
 	
 	records = data.length();
 
-	if (records > 30){
+	if (records > 40){
 		records = 0;
 	}
 
-	if(espwifi.getHTTPJsonData(timeAPI, time)){
-		data[records] = time["currentDateTime"] + ";" + pump + ";" + duration + ";" + action;
-	} else {
-		data[records] = ";" + pump + ";" + duration + ";" + action;
-	}
+	data[records] = getFullFormattedTime() + ";" + pump + ";" + duration + ";" + action;
 	espwifi.saveFile("/logs.json", data);
 }
 
@@ -93,7 +119,7 @@ void main_code()
 					request->send(200, "application/json", "{\"is_active\": \"true\"}");
 				} else {
 					digitalWrite(WATER_PUMPS[pumpNumber], LOW);
-					saveLogs(request->arg("pump"), request->arg("duration"), "Stopped");
+					saveLogs(request->arg("pump"), "", "Stopped");
 
 					WATER_PUMPS_DURATION[pumpNumber] = 0;
 					request->send(200, "application/json", "{\"is_active\": \"false\"}");
@@ -183,6 +209,9 @@ void setup()
 		espwifi.updateSketch(SKETCH_VERSION);
 		espwifi.saveFile("/version.txt", String(SKETCH_VERSION));
 		lastStatus = "Boot";
+		timeClient.begin();
+		timeClient.setTimeOffset(TIME_OFFSET);
+
 		main_code();
 	}
 }
@@ -201,7 +230,7 @@ void loop()
 			digitalWrite(WATER_PUMPS[i], LOW);
 
 			if (WATER_PUMPS_DURATION[i] != 0) {
-				saveLogs(String(i + 1), "0", "Stopped");
+				saveLogs(String(i + 1), "", "Stopped");
 			}
 			WATER_PUMPS_DURATION[i] = 0;
 		}
@@ -221,5 +250,6 @@ void loop()
 			systemAction = 0;
 			break; 
 	}
+	timeClient.update();
 	espwifi.stateCheck();
 }
