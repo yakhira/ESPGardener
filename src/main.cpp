@@ -3,7 +3,7 @@
 #include <ESPAsyncWebServer.h>
 
 // -------- DEFAULT SKETCH PARAMETERS --------
-const int SKETCH_VERSION = 62;
+const int SKETCH_VERSION = 60;
 //--------------------------------------------
 
 const int WATER_PUMPS[] = {12, 4};
@@ -64,16 +64,20 @@ void update_static_content() {
 
 void saveLogs(String pump, String duration, String action) {
 	JSONVar data;
-	JSONVar time;
 
 	int records = 0;
 
 	espwifi.readFile("/logs.json", data);
 	
 	records = data.length();
+	
+	if (records > 30){
+		JSONVar tempData;
 
-	if (records > 40){
-		records = 0;
+		for (int i = 1; i < data.length(); i++){
+			tempData[i-1] = data[i];
+		}
+		data = tempData;
 	}
 
 	data[records] = getFullFormattedTime() + ";" + pump + ";" + duration + ";" + action;
@@ -211,6 +215,7 @@ void setup()
 		lastStatus = "Boot";
 		timeClient.begin();
 		timeClient.setTimeOffset(TIME_OFFSET);
+		espwifi.removeFile("/logs.json");
 
 		main_code();
 	}
