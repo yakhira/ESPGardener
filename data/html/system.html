@@ -30,16 +30,19 @@
          request.onreadystatechange = function () {
             if (request.readyState == XMLHttpRequest.DONE) {
                if (request.responseText) {
-                  var logs = request.responseText.split(/\r?\n/);
+                  var data = JSON.parse(request.responseText);
                   var table = document.getElementById("logs");
 
-                  logs.forEach(line => {
-                     let row = table.insertRow();
+                  data.forEach(line => {
+                     let row = table.insertRow(1);
                      let log = line.split(";");
 
                      for (var i = 0; i < log.length; i++) {
-                        let cell = row.insertCell(i);
+                        let cell = row.insertCell();
                         cell.innerHTML = log[i];
+                     }
+                     for (var i = data.length + 1; i < table.rows.length - 1; i++) {
+                        table.deleteRow(i);
                      }
                   });
                }
@@ -66,7 +69,7 @@
          getLogs();
          getInfo();
          setTimeout(loadData, 5000);
-      }
+      } 
    </script>
 </head>
 
@@ -92,7 +95,7 @@
          </p>
          <p>
             <span>UI version: </span>
-            <span>2</span>
+            <span>3</span>
          </p>
          <p>
             <span>Data url: </span>

@@ -66,7 +66,7 @@ void ESPUtils::readFile(String filename, String &data) {
 
 	File file = LittleFS.open(filename, "r");
 	while (file.available()) {
-		data = file.readStringUntil('\n');
+		data += file.readStringUntil('\n');
     }
 	file.close();
 }
@@ -174,6 +174,8 @@ bool ESPUtils::downloadFile(String url, String filename) {
 			} 
 			file.close();
 		} else {
+			file.close();
+			http.end();
 			return false;
 		}
 	}

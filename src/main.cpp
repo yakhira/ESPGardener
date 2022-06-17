@@ -2,11 +2,13 @@
 #include <ESPAsyncWebServer.h>
 
 // -------- DEFAULT SKETCH PARAMETERS --------
-const int SKETCH_VERSION = 58;
+const int SKETCH_VERSION = 59;
+//--------------------------------------------
+
 const int WATER_PUMPS[] = {12, 4};
 const long unsigned int DEFAULT_DURATION = 300;
-
 unsigned long WATER_PUMPS_DURATION[] = {0, 0};
+const String timeAPI = "http://worldclockapi.com/api/json/cet/now";
 
 int systemAction = 0;
 String lastStatus;
@@ -28,6 +30,28 @@ void update_static_content() {
 			lastStatus += " " + htmlFiles[i];
 		}
 	}
+}
+
+void saveLogs(String pump, String duration, String action) {
+	JSONVar data;
+	JSONVar time;
+
+	int records = 0;
+
+	espwifi.readFile("/logs.json", data);
+	
+	records = data.length();
+
+	if (records > 30){
+		records = 0;
+	}
+
+	if(espwifi.getHTTPJsonData(timeAPI, time)){
+		data[records] = time["currentDateTime"] + ";" + pump + ";" + duration + ";" + action;
+	} else {
+		data[records] = ";" + pump + ";" + duration + ";" + action;
+	}
+	espwifi.saveFile("/logs.json", data);
 }
 
 void main_code() 
@@ -64,12 +88,12 @@ void main_code()
 						WATER_PUMPS_DURATION[pumpNumber] = millis() + DEFAULT_DURATION * 1000;
 					}
 					digitalWrite(WATER_PUMPS[pumpNumber], HIGH);
-					espwifi.appendFile("/logs.txt", "0;" + request->arg("pump") + ";" + request->arg("duration") + ";Started");
+					saveLogs(request->arg("pump"), request->arg("duration"), "Started");
 
 					request->send(200, "application/json", "{\"is_active\": \"true\"}");
 				} else {
 					digitalWrite(WATER_PUMPS[pumpNumber], LOW);
-					espwifi.appendFile("/logs.txt", "0;" + request->arg("pump") + ";" + request->arg("duration") + ";Stoppped");
+					saveLogs(request->arg("pump"), request->arg("duration"), "Stopped");
 
 					WATER_PUMPS_DURATION[pumpNumber] = 0;
 					request->send(200, "application/json", "{\"is_active\": \"false\"}");
@@ -137,8 +161,8 @@ void main_code()
 		); 
 	});
 
-	gardener.on("/api/logs", HTTP_GET, [](AsyncWebServerRequest *request){ 
-		request->send(LittleFS, "/logs.txt", "text/plain"); 
+	gardener.on("/api/logs", HTTP_GET, [](AsyncWebServerRequest *request){
+		request->send(LittleFS, "/logs.json", "application/json");
 	});
 
 	gardener.begin();
@@ -177,10 +201,7 @@ void loop()
 			digitalWrite(WATER_PUMPS[i], LOW);
 
 			if (WATER_PUMPS_DURATION[i] != 0) {
-				espwifi.appendFile(
-					"/logs.txt", 
-					"0;" + String(i + 1) + ";" + ";" + "Stopped"
-				);
+				saveLogs(String(i + 1), "0", "Stopped");
 			}
 			WATER_PUMPS_DURATION[i] = 0;
 		}
