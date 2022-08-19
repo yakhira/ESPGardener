@@ -14,6 +14,8 @@ class ESPWiFi: public ESPUtils {
         bool isWebServerRunning;
         int resetCount;
 
+        AsyncWebServer *server;
+
     public:
         ESPWiFi(String chipName);
         ~ESPWiFi();

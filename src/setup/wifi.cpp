@@ -11,12 +11,12 @@ String ESPWiFi::dataUrl;
 const String ESPWiFi::defaultWifiPassword = "ESPp@$$w0rd!";
 const String ESPWiFi::configFile = "/config/wifi_config.json";
 
-AsyncWebServer server(80);
-
 ESPWiFi::ESPWiFi(String chipName){
     isWebServerRunning = false;
     espChipName = chipName;
     resetCount = 0;
+
+    server = new AsyncWebServer(80);
 }
 
 ESPWiFi::~ESPWiFi(){
@@ -88,11 +88,11 @@ void ESPWiFi::wifiConnect(){
     else {
         WiFi.softAP(hostname, defaultWifiPassword);
 
-        server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+        server->on("/", HTTP_GET, [](AsyncWebServerRequest *request){
 			request->send(LittleFS, "/html/config.html", "text/html");
 		});
 
-        server.on("/wifi/save", HTTP_POST, [](AsyncWebServerRequest *request){
+        server->on("/wifi/save", HTTP_POST, [](AsyncWebServerRequest *request){
             if (request->hasArg("wifi_ssid") && request->hasArg("wifi_password")){
                 ESPUtils esputils;
                 ESPWiFi::wifiConfig["wifi_ssid"] = request->arg("wifi_ssid");
@@ -113,7 +113,7 @@ void ESPWiFi::wifiConnect(){
             }
 		});
 
-        server.begin();
+        server->begin();
 
         isWebServerRunning = true;
     }
